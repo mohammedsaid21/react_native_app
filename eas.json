@@ -1,0 +1,34 @@
+{
+  "cli": {
+    "version": ">= 3.9.0"
+  },
+  "build": {
+    "development": {
+      "env": {
+        "REACT_APP_API_URL": "https://ahmed-tayeh.com/ghalban-backend-test"
+      },
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    },
+    "production": {
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
