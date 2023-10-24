@@ -38,6 +38,7 @@
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "^2.9.0",
     "react-native-localization": "^2.3.1",
+    "react-native-pagination": "^1.5.5",
     "react-native-paper": "^5.5.1",
     "react-native-pdf": "^6.4.0",
     "react-native-reanimated": "~2.14.4",

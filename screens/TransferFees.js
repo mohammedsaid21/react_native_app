@@ -187,6 +187,12 @@ const TransferFees = () => {
         page === 0 ?
           <View style={styles.paginationContainer}>
             <Text style={styles.paginationText}>{`${i18n.t("pagination_page_label")} ${page + 1} ${i18n.t("pagination_of_label")} ${Math.ceil(transferFees.length / ITEM_PER_PAGE)}`}</Text>
+            <TouchableOpacity
+              disabled={page >= Math.ceil(transferFees.length / ITEM_PER_PAGE) - 1}
+              onPress={handleNext}
+              style={[styles.paginationButton, page >= Math.ceil(transferFees.length / ITEM_PER_PAGE) - 1 && styles.disabled]}>
+              <Ionicons name="caret-forward-outline" size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
           :
           searchLess10 ?

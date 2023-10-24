@@ -41,36 +41,36 @@ const HomeUser = () => {
       })
   }, [])
 
-  const handleSubmit = () => {
-    console.log("test 22")
-    // // event.preventDefault();
+  const handleSubmit = (event) => {
+    // console.log("test 22")
+    // event.preventDefault();
     // {
     //   "fromCountry": "بلجيكا", "toCountry": "العراق",
     //   "fromCurrency": "TRY", "toCurrency": "USD",
     //   "sentMoney": "500"
     // }
-    // const object = {
-    //   "fromCurrency": fromCurrency, "toCurrency": toCurrency,
-    //   "fromCountry": fromCountry, "toCountry": toCountry,
-    //   "sentMoney": sendAmount
-    // }
+    const object = {
+      "fromCurrency": fromCurrency, "toCurrency": toCurrency,
+      "fromCountry": fromCountry, "toCountry": toCountry,
+      "sentMoney": sendAmount
+    }
 
-    // console.log(object)
+    console.log(object)
 
-    // if (fromCurrency || toCurrency || fromCountry || toCountry || sendAmount) {
-    //   TransferTransactionService.calcuateTransferTransaction(object)
-    //     .then((res) => {
-    //       setShow(true)
-    //       setReceiveAmount(res.data?.netReceived)
-    //       setAllFees(res.data?.allFees)
-    //       console.log(res.data)
-    //     })
-    //     .catch(error => {
-    //       console.log(error)
-    //     })
-    // } else {
-    //   setErrorMsg("Enter All The Input Please")
-    // }
+    if (fromCurrency || toCurrency || fromCountry || toCountry || sendAmount) {
+      TransferTransactionService.calcuateTransferTransaction(object)
+        .then((res) => {
+          setShow(true)
+          setReceiveAmount(res.data?.netReceived)
+          setAllFees(res.data?.allFees)
+          console.log(res.data)
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    } else {
+      setErrorMsg("Enter All The Input Please")
+    }
   };
 
 
@@ -86,7 +86,7 @@ const HomeUser = () => {
   const toCurrencyRef = useRef();
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }}  keyboardShouldPersistTaps="handled">
       <Text style={styles.textHeader}>International money transfer</Text>
 
       <View style={styles.formConversion}>
@@ -126,12 +126,12 @@ const HomeUser = () => {
           </Picker>
         </View>
 
-        {/* <TextInput
+        <TextInput
           style={styles.input}
           placeholder="Send Amount"
           value={sendAmount}
           onChangeText={(text) => setSendAmount(text)}
-        /> */}
+        />
 
         <View style={styles.inputPicker}>
           <Picker
@@ -168,10 +168,10 @@ const HomeUser = () => {
           </Picker>
         </View>
 
-        {/* {show &&
+        {show &&
           <>
             <TextInput
-              style={[styles.input,]}
+              style={[styles.input, styles.disableInput]}
               placeholder="receive Amount"
               value={receiveAmount && receiveAmount.toString()}
               onChangeText={(text) => setReceiveAmount(text)}
@@ -179,7 +179,7 @@ const HomeUser = () => {
             />
 
             <TextInput
-              style={[styles.input,]}
+              style={[styles.input, styles.disableInput]}
               placeholder="receive Amount"
               value={allFees && allFees.toString()}
               onChangeText={(text) => setAllFees(text)}
@@ -189,13 +189,14 @@ const HomeUser = () => {
         }
         {errorMsg &&
           <Text style={{ color: "red", marginBottom: 10, fontSize: 12 }}>{errorMsg}</Text>
-        } */}
+        }
 
         <View style={{ marginVertical: 20 }}>
           <Button title="Submit" onPress={handleSubmit} />
         </View>
-        
+
       </View>
+
 
     </ScrollView>
   )
@@ -230,6 +231,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 10,
     fontSize: 14,
+    color: "#000"
   },
   inputPicker: {
     borderWidth: 1,

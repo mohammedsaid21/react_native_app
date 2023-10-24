@@ -210,8 +210,8 @@ const ar = {
   "user_transfer_fee_country_of_transaction" : "دولة العميل",
   
   
-  "pagination_page_label": "صفحة",
-  "pagination_of_label": "من",
+  "pagination_page_label": "الى",
+  "pagination_of_label": "من صفحة",
   "search_input": "بحث ..."
 
 };

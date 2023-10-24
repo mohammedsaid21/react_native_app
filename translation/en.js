@@ -218,8 +218,8 @@ const en = {
   "user_transfer_fee_id": "Id",
   "user_transfer_fee_country_of_transaction": "Broker/Mediator Works in Country",
 
-  "pagination_page_label": "page",
-  "pagination_of_label": "of",
+  "pagination_page_label": "from page",
+  "pagination_of_label": "to",
   "search_input": "Search..."
 
 

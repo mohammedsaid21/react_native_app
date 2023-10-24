@@ -14,6 +14,8 @@ import LoadingOverlay from '../components/UI/LoadingOverlay';
 import Toast from 'react-native-toast-message';
 import { useScrollToTop } from '@react-navigation/native';
 import i18n from '../I18N';
+import Pagination from '../components/pagination/Pagination';
+import Icon from 'react-native-vector-icons/FontAwesome'; // You can choose the icon library you prefer
 
 
 const ListUsers = () => {
@@ -112,6 +114,83 @@ const ListUsers = () => {
     setUserId(e)
     setModalNewUser(true)
   }
+
+
+  const [selectedRoleType, setSelectedRoleType] = useState(null);
+  let filterDataByRole = users?.filter(item => selectedRoleType ? item.roleType === selectedRoleType : true);
+
+  let dataToShow = users?.slice(page * ITEM_PER_PAGE, (page + 1) * ITEM_PER_PAGE)
+  const [filterData, setFilterData] = useState()
+  const [searchLess10, setSearchLess10] = useState(false)
+  const [noElement, setNoElement] = useState('')
+
+
+  const handleSearch = (query) => {
+    setPage(0)
+    setSearchQuery(query);
+    let queryLower = query.charAt(0).toLowerCase() + query.slice(1);
+    if (queryLower.length === 0) {
+      setSearchLess10(false)
+      setFilterData(users?.slice(page * ITEM_PER_PAGE, (page + 1) * ITEM_PER_PAGE))
+    }
+
+    setFilterData(dataToShow.filter((user) =>
+      user.userName.includes(queryLower)
+    ))
+
+    if (filterData && filterData.length === 0) {
+      setNoElement("There Is No Element")
+      Toast.show({
+        type: 'error',
+        text1: 'there is no items ',
+        position: "top"
+      });
+    }
+
+    if (filterData && filterData.length < 10) {
+      setSearchLess10(true)
+    }
+  }
+
+  useEffect(() => {
+    if (filterData && filterData.length <= 9) setSearchLess10(true)
+    else setSearchLess10(false)
+  }, [filterData, selectedRoleType])
+
+
+  const [sortBy, setSortBy] = useState({ column: '', direction: 'asc' });
+  // const [surveys, setSurveys] = useState(currentItems); // Your data array
+
+  const sortData = () => {
+    if (sortBy.column === '') {
+      return dataToShow; // Return original data if no sorting applied
+    }
+
+    const sortedData = [...dataToShow].sort((a, b) => {
+      const columnA = a[sortBy.column];
+      const columnB = b[sortBy.column];
+
+      if (typeof columnA === 'number' && typeof columnB === 'number') {
+        return sortBy.direction === 'asc' ? columnA - columnB : columnB - columnA;
+      } else {
+        return sortBy.direction === 'asc'
+          ? columnA.toString().localeCompare(columnB.toString())
+          : columnB.toString().localeCompare(columnA.toString());
+      }
+    });
+
+    return sortedData;
+  };
+
+  const handleSort = (column) => {
+    setSortBy((prevSortBy) => ({
+      column,
+      direction: prevSortBy?.column === column && prevSortBy?.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
+  // const sortedAndPaginatedData = sortData();
+  // console.log("🚀~ sortedAndPaginatedData:", sortedAndPaginatedData)
 
 
   const renderItem = ({ item, index }) => (
@@ -232,12 +311,37 @@ const ListUsers = () => {
     </View>
   );
 
+  // console.log("i18n ", i18n.locale)
+
   const renderFooter = () => (
     <>
+      <Text style={styles.thereIsnoElement}>{noElement}</Text>
+
       {
         page === 0 ?
           <View style={styles.paginationContainer}>
-            <Text style={styles.paginationText}>{`${i18n.t("pagination_page_label")} ${page + 1} ${i18n.t("pagination_of_label")} ${Math.ceil(users.length / ITEM_PER_PAGE)}`}</Text>
+            {/* <Text style={styles.paginationText}>{`${i18n.t("pagination_page_label")} ${page + 1} 
+                ${i18n.t("pagination_of_label")} ${Math.ceil(users.length / ITEM_PER_PAGE)}`}</Text> */}
+            {
+              i18n.locale === 'en'
+                ?
+                <View style={styles.paginationTextContainer}>
+                  <Text style={styles.paginationText}>{i18n.t("pagination_page_label")} {page + 1} </Text>
+                  <Text style={styles.paginationText}>{i18n.t("pagination_of_label")} {Math.ceil(users.length / ITEM_PER_PAGE)}</Text>
+                </View>
+                :
+                <View style={styles.paginationTextContainer}>
+                  <Text style={styles.paginationText}>{i18n.t("pagination_of_label")} {page + 1} </Text>
+                  <Text style={styles.paginationText}>{i18n.t("pagination_page_label")} {Math.ceil(users.length / ITEM_PER_PAGE)} </Text>
+                </View>
+            }
+
+            <TouchableOpacity
+              disabled={page >= Math.ceil(users.length / ITEM_PER_PAGE) - 1}
+              onPress={handleNext}
+              style={[styles.paginationButton, page >= Math.ceil(users.length / ITEM_PER_PAGE) - 1 && styles.disabled]}>
+              <Ionicons name={i18n.locale === 'en' ? "caret-forward-outline" : "caret-back-outline"} size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
           :
           searchLess10 ?
@@ -249,59 +353,36 @@ const ListUsers = () => {
                 disabled={page === 0}
                 onPress={handlePrev}
                 style={[styles.paginationButton, page === 0 && styles.disabled]}>
-                {/* <Text style={styles.paginationButtonText}>{'<'}</Text> */}
-                {/* <IconWithLabel iconName="caret-forward-outline" /> */}
-                <Ionicons name="caret-back-outline" size={20} color="#fff" />
+                {/* <Ionicons name="caret-back-outline" size={20} color="#fff" /> */}
+                <Ionicons name={i18n.locale !== 'en' ? "caret-forward-outline" : "caret-back-outline"} size={20} color="#fff" />
               </TouchableOpacity>
-              <Text style={styles.paginationText}>{`Page ${page + 1} of ${Math.ceil(users.length / ITEM_PER_PAGE)}`}</Text>
+
+              {
+                i18n.locale === 'en'
+                  ?
+                  <View style={styles.paginationTextContainer}>
+                    <Text style={styles.paginationText}>{i18n.t("pagination_page_label")} {page + 1} </Text>
+                    <Text style={styles.paginationText}>{i18n.t("pagination_of_label")} {Math.ceil(users.length / ITEM_PER_PAGE)}</Text>
+                  </View>
+                  :
+                  <View style={styles.paginationTextContainer}>
+                    <Text style={styles.paginationText}>{i18n.t("pagination_of_label")} {page + 1} </Text>
+                    <Text style={styles.paginationText}>{i18n.t("pagination_page_label")} {Math.ceil(users.length / ITEM_PER_PAGE)} </Text>
+                  </View>
+              }
+
               <TouchableOpacity
                 disabled={page >= Math.ceil(users.length / ITEM_PER_PAGE) - 1}
                 onPress={handleNext}
                 style={[styles.paginationButton, page >= Math.ceil(users.length / ITEM_PER_PAGE) - 1 && styles.disabled]}>
-                {/* <Text style={styles.paginationButtonText}>{'>'}</Text> */}
-                <Ionicons name="caret-forward-outline" size={20} color="#fff" />
+                {/* <Ionicons name="caret-forward-outline" size={20} color="#fff" /> */}
+                <Ionicons name={i18n.locale === 'en' ? "caret-forward-outline" : "caret-back-outline"} size={20} color="#fff" />
               </TouchableOpacity>
             </View>
       }
     </>
   );
 
-  const [selectedRoleType, setSelectedRoleType] = useState(null);
-  let filterDataByRole = users?.filter(item => selectedRoleType ? item.roleType === selectedRoleType : true);
-
-  let dataToShow = users?.slice(page * ITEM_PER_PAGE, (page + 1) * ITEM_PER_PAGE)
-  const [filterData, setFilterData] = useState()
-  const [searchLess10, setSearchLess10] = useState(false)
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    let queryLower = query.charAt(0).toLowerCase() + query.slice(1);
-    if (queryLower.length === 0) {
-      setSearchLess10(false)
-      setFilterData(users?.slice(page * ITEM_PER_PAGE, (page + 1) * ITEM_PER_PAGE))
-    }
-
-    setFilterData(dataToShow.filter((user) =>
-      user.userName.includes(queryLower)
-    ))
-
-    if (filterData && filterData.length === 0) {
-      Toast.show({
-        type: 'error',
-        text1: 'there is no items ',
-        position: "top"
-      });
-    }
-  }
-
-  useEffect(() => {
-    if (filterData && filterData.length <= 9 && filterData.length > 0) setSearchLess10(true)
-    else setSearchLess10(false)
-
-    console.log("")
-    // setFilterData(filterDataByRole)
-    // console.log(filterDataByRole)
-  }, [filterData, selectedRoleType])
 
 
   if (isloading) {
@@ -338,15 +419,20 @@ const ListUsers = () => {
 
             {/* header of Table */}
             <View style={styles.headerTable}>
-              <View style={{ flex: 2, borderEndColor: "#fff", borderEndWidth: 2, }}>
+              <TouchableOpacity onPress={() => handleSort("userName")} style={{ flex: 2, borderEndColor: "#fff", borderEndWidth: 2, flexDirection: "row", alignItems: "center", justifyContent: 'center' }} >
+                {/* <Icon name="sort-desc" size={18} color="#fff" /> */}
+                <Icon
+                  name={sortBy.direction === 'asc' ? 'caret-up' : 'caret-down'}
+                  size={12} color="#fff"
+                />
                 <Text style={styles.textCol}>{i18n.t("user_name")}</Text>
-              </View>
+              </TouchableOpacity>
               <View style={{ flex: 1, borderEndColor: "#fff", borderEndWidth: 2, }}>
                 <Text style={styles.textCol}>{i18n.t("user_role_type")}</Text>
               </View>
-              <View style={{ flex: 1, }}>
+              <TouchableOpacity onPress={() => handleSort("numberOfCurrentAccounts")} style={{ flex: 1.2, }}>
                 <Text style={[styles.textCol, { fontSize: 11 }]}>{i18n.t("user_accounts_number_of_accounts")}</Text>
-              </View>
+              </TouchableOpacity>
               {/* <View style={{ flex: 1 }}>
                 <Text style={[styles.textCol, { fontSize: 10 }]}>No. of Transactions</Text>
               </View> */}
@@ -355,7 +441,8 @@ const ListUsers = () => {
           </View>
         }
 
-        data={filterData || dataToShow}
+        data={sortData()}
+        // data={filterData || dataToShow}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         ListFooterComponent={renderFooter}
@@ -366,7 +453,6 @@ const ListUsers = () => {
       />
 
       <AddNewUser modalNewUser={modalNewUser} setModalNewUser={setModalNewUser} userId={userId} setUserId={setUserId} />
-
 
     </View>
   )
@@ -522,7 +608,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 26,
+    marginVertical: 25,
+    flex: 2,
   },
   paginationButton: {
     padding: 7,
@@ -538,9 +625,19 @@ const styles = StyleSheet.create({
   },
   paginationText: {
     fontSize: 14,
-    marginHorizontal: 14,
+  },
+  paginationTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 7,
   },
   disabled: {
     opacity: 0.5,
   },
+  thereIsnoElement: {
+    textAlign: 'center',
+    fontSize: 20,
+    paddingVertical: 10
+  }
 });

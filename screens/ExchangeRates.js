@@ -1,4 +1,4 @@
-import { View, Text, Animated, TouchableOpacity, StyleSheet, FlatList, TextInput } from 'react-native'
+import { View, Text, Animated, TouchableOpacity, StyleSheet, FlatList, TextInput, Button, TouchableWithoutFeedback, TouchableHighlight } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import IconWithLabel from '../components/UI/IconWithLabel';
@@ -65,14 +65,15 @@ const ExchangeRates = () => {
     scrollViewRef.current.scrollToOffset({ offset: 0, animated: true });
   };
 
-  const [animation, setAnimation] = useState(new Animated.Value(0));
+  // const [animation, setAnimation] = useState(new Animated.Value(0));
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const animation = useRef(new Animated.Value(0)).current;
 
   const handleRowPress = index => {
     setExpandedIndex(prevIndex => prevIndex === index ? null : index);
     Animated.timing(animation, {
       toValue: 1,
-      duration: 150,
+      duration: 100,
       useNativeDriver: false,
     }).start();
   };
@@ -84,7 +85,7 @@ const ExchangeRates = () => {
     if (expandedIndex === index) {
       Animated.timing(animation, {
         toValue: 0,
-        duration: 150,
+        duration: 100,
         useNativeDriver: false,
       }).start(() => handleRowPress(index));
     } else {
@@ -120,36 +121,41 @@ const ExchangeRates = () => {
   }
 
 
-
+  console.log("re rendaring")
   const renderItem = ({ item, index }) => (
     <View style={[styles.row, expandedIndex === index ? styles.borderActive : ""]} key={`${item.currency}-${index}`}>
-      {/* <TouchableOpacity onPress={() => toggleExpanded(index)} > */}
-      <TouchableOpacity onPress={() => toggleExpanded(index)} style={{ flexDirection: 'row', alignItems: 'center' }}>
 
-        <View style={{ flex: 1, }}>
-          <Text style={{ textAlign: 'center' }}>{item.id}</Text>
-        </View>
+      {/* <TouchableOpacity onPress={() => toggleExpanded(index)} style={{ flexDirection: 'row', alignItems: 'center' }}> */}
+      <TouchableWithoutFeedback  onPress={() => toggleExpanded(index)} >
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
 
-        <View style={{ flex: 1.3, }}>
-          <Text style={{ textAlign: 'center' }}>{item.fromCurrency}</Text>
+          <View style={{ flex: 1, }}>
+            <Text style={{ textAlign: 'center' }}>{item.id}</Text>
+          </View>
+
+          <View style={{ flex: 1.3, }}>
+            <Text style={{ textAlign: 'center' }}>{item.fromCurrency}</Text>
+          </View>
+          <View style={{ flex: 1.3, }}>
+            <Text style={{ textAlign: 'center' }}>{item.toCurrency}</Text>
+          </View>
+          <View style={{ flex: 1.3, flexDirection: 'row', justifyContent: 'center' }}>
+            <Text style={{ textAlign: 'center' }}>{item.rate}</Text>
+            {/* <Text style={{ textAlign: 'center', marginHorizontal: 5 }}>{item.numberOfAccountTransactions}</Text> */}
+            <Ionicons
+              name={expandedIndex === index ? 'caret-up-outline' : 'caret-down-outline'}
+              size={20}
+              color="green"
+              style={{ justifyContent: 'center', textAlign: 'center' }}
+            />
+          </View>
         </View>
-        <View style={{ flex: 1.3, }}>
-          <Text style={{ textAlign: 'center' }}>{item.toCurrency}</Text>
-        </View>
-        <View style={{ flex: 1.3, flexDirection: 'row', justifyContent: 'center' }}>
-          <Text style={{ textAlign: 'center' }}>{item.rate}</Text>
-          {/* <Text style={{ textAlign: 'center', marginHorizontal: 5 }}>{item.numberOfAccountTransactions}</Text> */}
-          <Ionicons
-            name={expandedIndex === index ? 'caret-up-outline' : 'caret-down-outline'}
-            size={20}
-            color="green"
-            style={{ justifyContent: 'center', textAlign: 'center' }}
-          />
-        </View>
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
+      {/* {expandedIndex === index && ( */}
       {expandedIndex === index && (
         <Animated.View
           style={{
+            
             height: animation.interpolate({
               inputRange: [0, 1],
               outputRange: [0, 220],
@@ -199,6 +205,12 @@ const ExchangeRates = () => {
         page === 0 ?
           <View style={styles.paginationContainer}>
             <Text style={styles.paginationText}>{`${i18n.t("pagination_page_label")} ${page + 1} ${i18n.t("pagination_of_label")} ${Math.ceil(exchangeRates.length / ITEM_PER_PAGE)}`}</Text>
+            <TouchableOpacity
+              disabled={page >= Math.ceil(exchangeRates.length / ITEM_PER_PAGE) - 1}
+              onPress={handleNext}
+              style={[styles.paginationButton, page >= Math.ceil(exchangeRates.length / ITEM_PER_PAGE) - 1 && styles.disabled]}>
+              <Ionicons name="caret-forward-outline" size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
           :
           searchLess10 ?
@@ -271,13 +283,12 @@ const ExchangeRates = () => {
     return <LoadingOverlay />
   }
 
-
   return (
     <View style={styles.container} ref={scrollUp}>
 
       <FlatList
         ListHeaderComponent={
-          <View >
+          <View>
             <View style={styles.headerPage}>
               <TextInput
                 style={styles.inputSearch}
@@ -318,7 +329,9 @@ const ExchangeRates = () => {
         // initialNumToRender={10}
         ref={scrollViewRef}
         nestedScrollEnabled={true}
+        extraData={expandedIndex} // Add this line
       />
+
 
       <AddNewPriceRate
         showAddNewPrice={showAddNewPrice} setShowAddNewPrice={setShowAddNewPrice}
@@ -329,7 +342,7 @@ const ExchangeRates = () => {
   )
 }
 
-export default ExchangeRates
+export default React.memo(ExchangeRates)
 
 
 const styles = StyleSheet.create({

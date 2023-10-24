@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, BackHandler, Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DefaultTheme, NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -33,7 +33,9 @@ import CustomDrawer from './components/UI/CustomDrawer';
 import Toast from 'react-native-toast-message';
 import ExchangeRates from './screens/ExchangeRates';
 import TransferFees from './screens/TransferFees';
-import HomeUser from './screens/HomeUser/HomeUser';
+import HomeUser from './screens/notAuth/HomeUser';
+import AboutUs from './screens/notAuth/AboutUs';
+import Contact from './screens/notAuth/Contact';
 
 // الحمد لله ربنا اليوم أكرمني وييسرها
 
@@ -54,11 +56,7 @@ const MyTheme = {
     primary: 'rgb(255, 45, 85)',
   },
 };
-{/* <Stack.Navigator>
-      <Stack.Screen name="Login" component={Login}
-        options={{ title: i18n.t("header_login_label") }}
-      />
-    </Stack.Navigator> */}
+
 function AuthStack() {
   return (
     <Drawer.Navigator initialRouteName='HomeUser'
@@ -89,6 +87,30 @@ function AuthStack() {
           headerTitleAlign: 'center'
         }}
       />
+
+      <Drawer.Screen name="AboutUs" component={AboutUs}
+        options={{
+          title: "About Us",
+          headerTitleAlign: 'center'
+        }}
+      />
+
+      <Drawer.Screen name="Contact" component={Contact}
+        options={{
+          title: "Contact Us",
+          headerTitleAlign: 'center'
+        }}
+      />
+
+      {/*
+        HomeUser / About Us / Send Money / services / ExchangeRates / Contact Us  
+          <Route path="/aboutUs" element={<About />} />
+          <Route path="/sendMoney" element={<SendMoney />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/exchangeRates" element={<ExchangeRates />} />
+          <Route path="/contact" element={<Contact />} /> 
+      */}
+
     </Drawer.Navigator>
   )
 }
@@ -122,7 +144,8 @@ function AuthenticatedStack() {
         options={{
           title: i18n.t("header_CurrentAccountsUsers_label"),
           headerTitleAlign: 'center'
-        }} />
+        }}
+      />
 
       <Drawer.Screen name="ListCurrentAccountMoves" component={ListCurrentAccountMoves}
         options={{
@@ -174,15 +197,7 @@ function Navigation() {
 
   const [appIsReady, setAppIsReady] = useState(false);
 
-  // const onLayoutRootView = useCallback(async () => {
-  //   if (appIsReady) {
-  //     await SplashScreen.hideAsync();
-  //   }
-  // }, [appIsReady]);
 
-  // if (!appIsReady) {
-  //   return null;
-  // }
   const [loggedInUser, setLoggedInUser] = useState(authService.currentUserValue);
 
   useEffect(() => {
@@ -207,18 +222,31 @@ function Root() {
   const authCTX = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const exitHandler = () => {
+      Alert.alert("Exit App", "are you sure that you want to exit app?", [
+        {
+          text: "Cancel",
+          onPress: () => null,
+          style: "cancel"
+        },
+        {
+          text: "ok",
+          onPress: () => BackHandler.exitApp()
+        },
+      ]);
+      return true;
+    }
+
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", exitHandler)
+
+    return () => backHandler.remove();
+  }, [])
+
 
   useEffect(() => {
     async function fetchToken() {
       const storedToken = await AsyncStorage.getItem("token")
-
-      // AsyncStorage.getItem('lang')
-      //   .then((res) => console.log("lang ", res))
-
-      // AsyncStorage.getItem("token")
-      //   .then((token) => console.log("token ", token))
-
-      // strings.setLanguage('en')
 
       if (storedToken) {
         authCTX.authenticate(storedToken)
@@ -233,15 +261,6 @@ function Root() {
     fetchToken()
   }, [isTryingLogin])
 
-  // const [language, setLanguage] = useState('en');
-  // useEffect(() => {
-  //   if (language) {
-  //     strings.setLanguage(language);
-  //   } else {
-  //     strings.setLanguage(language);
-  //     console.log('sadasdf dfsa ')
-  //   }
-  // }, [language]);
 
 
   if (isLoading || isTryingLogin) {
